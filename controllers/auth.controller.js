@@ -1,5 +1,8 @@
 import User from "../models/user.model.js";
 import multer from 'multer';
+import bcrypt from "bcryptjs"
+import { generateToken } from "../utils/generateToken.js";
+import jwt from "jsonwebtoken"
 
 export const signup = async (req, res) => {
     try {
@@ -29,7 +32,6 @@ export const signup = async (req, res) => {
             partnersAgeRangeMin,
             birthDate,
             shortStory,
-            profileImage,
             password,
             email
         } = req.body;
@@ -42,6 +44,9 @@ export const signup = async (req, res) => {
                 // If the images are successfully uploaded, you can save their paths to the database or perform any other action here
                 // @ts-ignore
                 const imagePaths = req.files.map((file) => file.path);
+                const salt = await bcrypt.genSalt(10)
+                const hashedpassword = await bcrypt.hash(password, salt)
+
                 const newUser = new User({
                     fullname,
                     interestedIn,
@@ -69,13 +74,20 @@ export const signup = async (req, res) => {
                     birthDate,
                     shortStory,
                     profileImage: imagePaths[0],
-                    password,
+                    password: hashedpassword,
                     email,
                     threeImages: imagePaths
                 });
 
                 const savedUser = await newUser.save()
-                res.status(201).json(savedUser)
+
+                if (process.env.ACCESS_TOKEN_SECRET && process.env.REFRESH_TOKEN_SECRET) {
+                    const accessToken = jwt.sign({ userId: savedUser._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
+                    const refreshToken = jwt.sign({ userId: savedUser._id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '365d' });
+                    res.status(201).json({ savedUser, accessToken, refreshToken })
+                }
+
+
             } else {
                 res.status(400).json({ message: 'No images uploaded' });
             }
@@ -83,7 +95,25 @@ export const signup = async (req, res) => {
         }
 
     } catch (error) {
-        res.status(500).json({ error: "Something is wrong!" })
+        res.status(500).json({ error: "Something is wrong!", exactError: error })
+    }
+}
+
+export const refreshToken = (req, res) => {
+    const refreshToken = req.body.token;
+    if (!refreshToken) {
+        return res.sendStatus(401);
+    }
+    if (process.env.REFRESH_TOKEN_SECRET) {
+        jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+            if (err) {
+                return res.sendStatus(403);
+            }
+            if (process.env.ACCESS_TOKEN_SECRET) {
+                const accessToken = jwt.sign({ userId: user.userId }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
+                res.json({ accessToken });
+            }
+        });
     }
 }
 

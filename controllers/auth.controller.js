@@ -110,15 +110,35 @@ export const refreshToken = (req, res) => {
                 return res.sendStatus(403);
             }
             if (process.env.ACCESS_TOKEN_SECRET) {
-                const accessToken = jwt.sign({ userId: user.userId }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
+                const accessToken = jwt.sign({ userId: user.userId }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
                 res.json({ accessToken });
             }
         });
     }
 }
 
-export const signin = (req, res) => {
-    res.send("sign in users")
+
+// Login endpoint
+export const signin = async (req, res) => {
+    try {
+        const user = await User.findOne({ email: req.body.email });
+        if (!user) {
+            return res.status(400).send('User not found');
+        }
+        const validPassword = await bcrypt.compare(req.body.password, user.password);
+        if (!validPassword) {
+            return res.status(400).send('Invalid password');
+        }
+        if (process.env.ACCESS_TOKEN_SECRET && process.env.REFRESH_TOKEN_SECRET) {
+            const accessToken = jwt.sign({ userId: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+            const refreshToken = jwt.sign({ userId: user._id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
+            const { password, ...userWthoutPassword } = user
+            res.json({ userWthoutPassword, accessToken, refreshToken });
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).send('Error logging in');
+    }
 }
 
 export const signout = (req, res) => {

@@ -132,8 +132,9 @@ export const signin = async (req, res) => {
         if (process.env.ACCESS_TOKEN_SECRET && process.env.REFRESH_TOKEN_SECRET) {
             const accessToken = jwt.sign({ userId: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
             const refreshToken = jwt.sign({ userId: user._id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
-            const { password, ...userWthoutPassword } = user
-            res.json({ userWthoutPassword, accessToken, refreshToken });
+            // @ts-ignore
+            user.password = undefined
+            res.json({ user, accessToken, refreshToken });
         }
     } catch (error) {
         console.log(error);

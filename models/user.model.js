@@ -23,6 +23,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    city: {
+        type: String,
+        required: true
+    },
     isStudent: {
         type: Boolean,
         required: true

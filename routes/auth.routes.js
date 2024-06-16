@@ -8,7 +8,7 @@ const upload = multer({ storage: storage, fileFilter: fileFilter });
 
 router.post("/login", signin)
 
-router.post("/register", upload.array('images', 3), signup)
+router.post("/register", upload.single("profilePic"), signup)
 
 router.post("/logout", signout)
 

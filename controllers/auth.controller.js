@@ -1,8 +1,8 @@
 import User from "../models/user.model.js";
 import multer from 'multer';
 import bcrypt from "bcryptjs"
-import { generateToken } from "../utils/generateToken.js";
 import jwt from "jsonwebtoken"
+import fs from "fs"
 
 export const signup = async (req, res) => {
     try {
@@ -13,38 +13,27 @@ export const signup = async (req, res) => {
             gender,
             country,
             city,
-            isStudent,
-            studyTopic,
-            profession,
-            doesHaveApurpose,
-            purpose,
-            doYouReadBooks,
-            books,
-            musicians,
-            favoriteFoods,
-            favoriteMovies,
-            favoriteDrinks,
-            favoriteSportsTeam,
-            doesLikeTravelling,
-            doesHavePet,
-            aboutPet,
-            languages,
-            partnersAgeRangeMax,
-            partnersAgeRangeMin,
             birthDate,
-            shortStory,
+            bio,
+            partnersBio,
+            yearlyIncome,
             password,
             email
         } = req.body;
 
         const user = await User.findOne({ email })
         if (user) {
+            // If user exists, delete the uploaded file
+            fs.unlink(req.file.path, (err) => {
+                if (err) {
+                    console.error('Error deleting file:', err);
+                }
+            });
             res.status(400).json({ error: "Email already exists!" })
         } else {
-            if (req.files) {
+            if (req.file.path) {
                 // If the images are successfully uploaded, you can save their paths to the database or perform any other action here
                 // @ts-ignore
-                const imagePaths = req.files.map((file) => file.path);
                 const salt = await bcrypt.genSalt(10)
                 const hashedpassword = await bcrypt.hash(password, salt)
 
@@ -55,30 +44,13 @@ export const signup = async (req, res) => {
                     gender,
                     country,
                     city,
-                    isStudent,
-                    studyTopic,
-                    profession,
-                    doesHaveApurpose,
-                    purpose,
-                    doYouReadBooks,
-                    books,
-                    musicians,
-                    favoriteFoods,
-                    favoriteMovies,
-                    favoriteDrinks,
-                    favoriteSportsTeam,
-                    doesLikeTravelling,
-                    doesHavePet,
-                    aboutPet,
-                    languages,
-                    partnersAgeRangeMax,
-                    partnersAgeRangeMin,
                     birthDate,
-                    shortStory,
-                    profileImage: imagePaths[0],
+                    bio,
+                    partnersBio,
+                    yearlyIncome,
+                    profilePic: req.file.path,
                     password: hashedpassword,
                     email,
-                    threeImages: imagePaths
                 });
 
                 const savedUser = await newUser.save()
@@ -133,7 +105,7 @@ export const signin = async (req, res) => {
         }
         if (process.env.ACCESS_TOKEN_SECRET && process.env.REFRESH_TOKEN_SECRET) {
             const accessToken = jwt.sign({ userId: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
-            const refreshToken = jwt.sign({ userId: user._id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
+            const refreshToken = jwt.sign({ userId: user._id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '365d' });
             // @ts-ignore
             user.password = undefined
             res.json({ user, accessToken, refreshToken });

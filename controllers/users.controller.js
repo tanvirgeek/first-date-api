@@ -15,7 +15,7 @@ export const getPaginatedUsersFromCity = async (req, res) => {
         // Query for random users not in excludedUserIds
         const randomUsers = await User.aggregate([
             { $match: { city, _id: { $nin: sessionUsers.excludedUserIds } } },
-            { $sample: { size: 2 } }
+            { $sample: { size: 6 } }
         ]);
 
         if (randomUsers.length === 0) {

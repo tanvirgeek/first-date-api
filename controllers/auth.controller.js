@@ -54,6 +54,8 @@ export const signup = async (req, res) => {
                 });
 
                 const savedUser = await newUser.save()
+                // @ts-ignore
+                savedUser.password = undefined
 
                 if (process.env.ACCESS_TOKEN_SECRET && process.env.REFRESH_TOKEN_SECRET) {
                     const accessToken = jwt.sign({ userId: savedUser._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });

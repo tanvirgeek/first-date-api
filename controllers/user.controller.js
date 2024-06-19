@@ -108,7 +108,7 @@ export const updateUserProfilePic = async (req, res) => {
             const targetDir = findTargetDir('first-date-api', __dirname);
             // Construct the full path to the file
             // @ts-ignore
-            const filePath = path.join(targetDir, 'uploads', oldProfilePic);
+            const filePath = path.join(targetDir, 'uploads', 'profileImages', req.user.userId, oldProfilePic);
             console.log(filePath)
             fs.unlink(filePath, (err) => {
                 if (err) {

@@ -3,6 +3,7 @@ import multer from 'multer';
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import fs from "fs"
+import path from "path";
 
 export const signup = async (req, res) => {
     try {
@@ -18,59 +19,47 @@ export const signup = async (req, res) => {
             partnersBio,
             yearlyIncome,
             password,
-            email
+            email,
+            profilePic
         } = req.body;
 
         const user = await User.findOne({ email })
         if (user) {
-            // If user exists, delete the uploaded file
-            fs.unlink(req.file.path, (err) => {
-                if (err) {
-                    console.error('Error deleting file:', err);
-                }
-            });
             res.status(400).json({ error: "Email already exists!" })
         } else {
-            if (req.file.path) {
-                // If the images are successfully uploaded, you can save their paths to the database or perform any other action here
-                // @ts-ignore
-                const salt = await bcrypt.genSalt(10)
-                const hashedpassword = await bcrypt.hash(password, salt)
+            // If the images are successfully uploaded, you can save their paths to the database or perform any other action here
+            // @ts-ignore
+            const salt = await bcrypt.genSalt(10)
+            const hashedpassword = await bcrypt.hash(password, salt)
 
-                const newUser = new User({
-                    fullname,
-                    interestedIn,
-                    attachmentStyle,
-                    gender,
-                    country,
-                    city,
-                    birthDate,
-                    bio,
-                    partnersBio,
-                    yearlyIncome,
-                    profilePic: req.file.path,
-                    password: hashedpassword,
-                    email,
-                });
+            const newUser = new User({
+                fullname,
+                interestedIn,
+                attachmentStyle,
+                gender,
+                country,
+                city,
+                birthDate,
+                bio,
+                partnersBio,
+                yearlyIncome,
+                profilePic: profilePic,
+                password: hashedpassword,
+                email,
+            });
 
-                const savedUser = await newUser.save()
-                // @ts-ignore
-                savedUser.password = undefined
+            const savedUser = await newUser.save()
+            // @ts-ignore
+            savedUser.password = undefined
 
-                if (process.env.ACCESS_TOKEN_SECRET && process.env.REFRESH_TOKEN_SECRET) {
-                    const accessToken = jwt.sign({ userId: savedUser._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
-                    const refreshToken = jwt.sign({ userId: savedUser._id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '365d' });
-                    res.status(201).json({ savedUser, accessToken, refreshToken })
-                }
-
-
-            } else {
-                res.status(400).json({ message: 'No images uploaded' });
+            if (process.env.ACCESS_TOKEN_SECRET && process.env.REFRESH_TOKEN_SECRET) {
+                const accessToken = jwt.sign({ userId: savedUser._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
+                const refreshToken = jwt.sign({ userId: savedUser._id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '365d' });
+                res.status(201).json({ savedUser, accessToken, refreshToken })
             }
-
         }
-
     } catch (error) {
+        console.log(error)
         res.status(500).json({ error: "Something is wrong!", exactError: error })
     }
 }
@@ -118,6 +107,30 @@ export const signin = async (req, res) => {
     }
 }
 
+export const uploadProfilePic = async (req, res) => {
+
+    if (!req.file) {
+        return res.status(400).json({ error: 'No file was uploaded.' });
+    }
+
+    const imageUrl = path.join('uploads', 'profileImages', req.user.userId, req.file.filename);
+
+    try {
+        // Update user's profilePic field
+        const user = await User.findById(req.user.userId);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        user.profilePic = imageUrl;
+        await user.save();
+
+        res.status(200).json({ user });
+    } catch (error) {
+        res.status(500).json({ error: 'An error occurred while saving the profile picture.' });
+    }
+}
+
 export const signout = (req, res) => {
     res.send("sign out users")
 }
@@ -125,11 +138,21 @@ export const signout = (req, res) => {
 // Set up multer storage
 export const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, 'uploads/');
+        // @ts-ignore
+        const userId = req.user.userId;
+        const uploadPath = path.join('uploads', 'profileImages', userId);
+
+        // Check if the directory exists, if not, create it
+        fs.mkdir(uploadPath, { recursive: true }, (err) => {
+            if (err) {
+                return cb(err, uploadPath);
+            }
+            cb(null, uploadPath);
+        });
     },
     filename: function (req, file, cb) {
         cb(null, Date.now() + '-' + file.originalname);
-    },
+    }
 });
 
 // Filter for image files

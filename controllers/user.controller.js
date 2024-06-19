@@ -3,6 +3,8 @@ import bcrypt from "bcryptjs";
 import fs from "fs"
 import { fileURLToPath } from 'url';
 import path from 'path';
+import multer from 'multer';
+import ImageGallery from "../models/imageGallery.model.js";
 
 export const updatePassword = async (req, res) => {
 
@@ -124,3 +126,57 @@ export const updateUserProfilePic = async (req, res) => {
         res.status(500).json({ error: 'An error occurred while updating the user profile pic' });
     }
 }
+
+export const uploadGalleryImages = async (req, res) => {
+    const userId = req.user.userId;
+
+    if (!req.files || req.files.length === 0) {
+        return res.status(400).json({ error: 'No files were uploaded.' });
+    }
+
+    const imageUrls = req.files.map(file => path.join('uploads', 'imageGallery', userId, file.filename));
+
+    try {
+        // Find existing gallery for user or create a new one
+        let gallery = await ImageGallery.findOne({ userId: userId });
+        if (gallery) {
+            gallery.images.push(...imageUrls);
+        } else {
+            gallery = new ImageGallery({ userId, images: imageUrls });
+        }
+
+        await gallery.save();
+        res.status(200).json({ message: 'Images uploaded successfully.', gallery });
+    } catch (error) {
+        res.status(500).json({ error: 'An error occurred while saving the images.' });
+    }
+}
+
+
+
+// config/multerConfig.js
+export const storageGallery = multer.diskStorage({
+    destination: function (req, file, cb) {
+        // @ts-ignore
+        const userId = req.user.userId;
+        const uploadPath = path.join('uploads', 'imageGallery', userId);
+        // Check if the directory exists, if not, create it
+        fs.mkdir(uploadPath, { recursive: true }, (err) => {
+            if (err) {
+                return cb(err, uploadPath);
+            }
+            cb(null, uploadPath);
+        });
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + '-' + file.originalname);
+    }
+});
+
+export const uploadGallery = multer({
+    storage: storageGallery,
+    limits: {
+        fileSize: 1024 * 1024 * 5, // 5MB max file size
+        files: 9 // Maximum number of files
+    }
+});

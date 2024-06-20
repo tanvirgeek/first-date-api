@@ -140,7 +140,7 @@ export const uploadGalleryImages = async (req, res) => {
         // Find existing gallery for user or create a new one
         let gallery = await ImageGallery.findOne({ userId: userId });
         if (gallery) {
-            gallery.images.push(...imageUrls);
+            res.status(400).json({ error: 'Gallery Already Exists' });
         } else {
             gallery = new ImageGallery({ userId, images: imageUrls });
         }
@@ -149,6 +149,75 @@ export const uploadGalleryImages = async (req, res) => {
         res.status(200).json({ message: 'Images uploaded successfully.', gallery });
     } catch (error) {
         res.status(500).json({ error: 'An error occurred while saving the images.' });
+    }
+}
+
+export const deleteSingleImageFromGallery = async (req, res) => {
+    const { imageName } = req.query;
+    const userId = req.user.userId;
+
+    const imagePath = path.join('uploads', 'imageGallery', userId, imageName);
+
+    try {
+        // Find the gallery for the user
+        const gallery = await ImageGallery.findOne({ userId: userId });
+        if (!gallery) {
+            return res.status(404).json({ error: 'User gallery not found' });
+        }
+
+        // Check if the image exists in the gallery
+        const imageIndex = gallery.images.indexOf(imagePath);
+        if (imageIndex === -1) {
+            return res.status(404).json({ error: 'Image not found in gallery' });
+        }
+
+        // Remove the image file from the file system
+        fs.unlink(imagePath, async (err) => {
+            if (err) {
+                return res.status(500).json({ error: 'An error occurred while deleting the image file' });
+            }
+
+            // Remove the image URL from the gallery in the database
+            gallery.images.splice(imageIndex, 1);
+            await gallery.save();
+
+            res.status(200).json({ message: 'Image deleted successfully' });
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'An error occurred while deleting the image' });
+    }
+}
+
+export const updateImageGallery = async (req, res) => {
+    const userId = req.user.userId;
+
+    if (!req.files || req.files.length === 0) {
+        return res.status(400).json({ error: 'No files were uploaded.' });
+    }
+
+    try {
+        // Find the gallery for the user
+        let gallery = await ImageGallery.findOne({ userId: userId });
+        if (!gallery) {
+            return res.status(404).json({ error: 'User gallery not found' });
+        }
+
+        // Check how many images can be added without exceeding the limit
+        const remainingSlots = 9 - gallery.images.length;
+        if (remainingSlots <= 0) {
+            return res.status(400).json({ error: 'Image gallery is full.' });
+        }
+
+        const imagesToAdd = req.files.slice(0, remainingSlots);
+        const imageUrls = imagesToAdd.map(file => path.join('uploads', 'imageGallery', userId, file.filename));
+
+        // Append the new images to the gallery
+        gallery.images.push(...imageUrls);
+        await gallery.save();
+
+        res.status(200).json({ message: 'Images added successfully.', gallery });
+    } catch (error) {
+        res.status(500).json({ error: 'An error occurred while adding the images.' });
     }
 }
 
@@ -178,5 +247,32 @@ export const uploadGallery = multer({
     limits: {
         fileSize: 1024 * 1024 * 5, // 5MB max file size
         files: 9 // Maximum number of files
+    }
+});
+
+export const storageUpadateImageGallery = multer.diskStorage({
+    destination: function (req, file, cb) {
+        // @ts-ignore
+        const userId = req.user.userId;
+        const uploadPath = path.join('uploads', 'imageGallery', userId);
+
+        // Check if the directory exists, if not, create it
+        fs.mkdir(uploadPath, { recursive: true }, (err) => {
+            if (err) {
+                return cb(err, uploadPath);
+            }
+            cb(null, uploadPath);
+        });
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + '-' + file.originalname);
+    }
+});
+
+export const uploadUpdateImageGallery = multer({
+    storage: storageUpadateImageGallery,
+    limits: {
+        fileSize: 1024 * 1024 * 5, // 5MB max file size
+        files: 8 // Maximum number of files
     }
 });

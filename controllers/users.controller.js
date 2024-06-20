@@ -9,8 +9,9 @@ export const getPaginatedUsersFromCity = async (req, res) => {
         let sessionUsers = await SessionUsers.findOne({ sessionId });
         if (!sessionUsers) {
             // If sessionUsers not found, create a new one
-            sessionUsers = new SessionUsers({ sessionId, excludedUserIds: [] });
+            sessionUsers = new SessionUsers({ sessionId, excludedUserIds: [req.user.userId] });
         }
+
 
         // Query for random users not in excludedUserIds
         const randomUsers = await User.aggregate([

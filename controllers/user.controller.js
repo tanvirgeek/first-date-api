@@ -109,7 +109,6 @@ export const updateUserProfilePic = async (req, res) => {
             // Construct the full path to the file
             // @ts-ignore
             const filePath = path.join(targetDir, 'uploads', 'profileImages', req.user.userId, oldProfilePic);
-            console.log(filePath)
             fs.unlink(filePath, (err) => {
                 if (err) {
                     console.error('Error deleting file:', err);
@@ -140,17 +139,40 @@ export const uploadGalleryImages = async (req, res) => {
         // Find existing gallery for user or create a new one
         let gallery = await ImageGallery.findOne({ userId: userId });
         if (gallery) {
-            res.status(400).json({ error: 'Gallery Already Exists' });
+            res.status(200).json({ error: 'Gallery Already Exists' });
         } else {
             gallery = new ImageGallery({ userId, images: imageUrls });
+            await gallery.save();
+            res.status(200).json({ message: 'Images uploaded successfully.', gallery });
         }
 
-        await gallery.save();
-        res.status(200).json({ message: 'Images uploaded successfully.', gallery });
+
     } catch (error) {
+        console.log(error)
         res.status(500).json({ error: 'An error occurred while saving the images.' });
     }
 }
+// Ensure you have the correct path to your model
+
+// Controller function to fetch gallery images
+export const fetchGalleryImages = async (req, res) => {
+    const userId = req.user.userId;
+
+    try {
+        // Find the gallery for the user
+        const gallery = await ImageGallery.findOne({ userId: userId });
+
+        if (!gallery) {
+            return res.status(200).json({ error: 'Gallery not found' });
+        }
+
+        // Return the gallery images
+        res.status(200).json({ gallery });
+    } catch (error) {
+        res.status(500).json({ error: 'An error occurred while fetching the gallery images.' });
+    }
+}
+
 
 export const deleteSingleImageFromGallery = async (req, res) => {
     const { imageName } = req.query;

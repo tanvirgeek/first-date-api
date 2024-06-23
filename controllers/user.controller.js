@@ -158,7 +158,8 @@ export const uploadGalleryImages = async (req, res) => {
 
 // Controller function to fetch gallery images
 export const fetchGalleryImages = async (req, res) => {
-    const userId = req.user.userId;
+    
+    const { userId } = req.query
 
     try {
         // Find the gallery for the user

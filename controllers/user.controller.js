@@ -75,6 +75,8 @@ export const updateUserIformation = async (req, res) => {
 
         await user.save();
 
+        // @ts-ignore
+        user.password = undefined
         res.status(200).json({ message: 'User profile updated successfully', user });
     } catch (error) {
         res.status(500).json({ error: 'An error occurred while updating the user profile' });

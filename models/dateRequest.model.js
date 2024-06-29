@@ -2,8 +2,7 @@ import mongoose from 'mongoose';
 const { Schema } = mongoose;
 
 // Define the SearchResult schema
-const SearchResultSchema = new Schema({
-    id: { type: String, default: () => new mongoose.Types.ObjectId() },
+const DateSpotSchema = new Schema({
     location: {
         latitude: Number,
         longitude: Number
@@ -19,7 +18,7 @@ const SearchResultSchema = new Schema({
 
 // Define the DateRequest schema
 const DateRequestSchema = new Schema({
-    dateSpot: { type: SearchResultSchema, required: true },
+    dateSpot: { type: DateSpotSchema, required: true },
     dateInitiator: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     date: { type: Schema.Types.ObjectId, ref: 'User', required: true }
 });

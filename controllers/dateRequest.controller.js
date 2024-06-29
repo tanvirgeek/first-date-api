@@ -1,4 +1,5 @@
 import DateRequest from "../models/dateRequest.model.js";
+import mongoose from "mongoose";
 
 export const postDateRequest = async (req, res) => {
     try {
@@ -21,3 +22,20 @@ export const postDateRequest = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 }
+
+export const getMydates = async (req, res) => {
+    try {
+
+        const userId = new mongoose.Types.ObjectId(req.user.userId);
+        const myDates = await DateRequest.find({
+            $or: [
+                { dateInitiator: userId },
+                { date: userId }
+            ]
+        }).populate('dateInitiator date');
+
+        res.status(200).json(myDates);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};

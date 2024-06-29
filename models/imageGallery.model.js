@@ -11,7 +11,7 @@ const ImageGallerySchema = new mongoose.Schema({
         type: [String], // Array of image URLs
         required: true
     }
-});
+}, { timestamps: true });
 
 const ImageGallery = mongoose.model('ImageGallery', ImageGallerySchema);
 

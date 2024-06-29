@@ -20,8 +20,10 @@ const DateSpotSchema = new Schema({
 const DateRequestSchema = new Schema({
     dateSpot: { type: DateSpotSchema, required: true },
     dateInitiator: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    date: { type: Schema.Types.ObjectId, ref: 'User', required: true }
-});
+    date: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    dateStatus: { type: String, required: true, enum: ["Pending", "Accepted", "Rejected"] },
+    dateNote: { type: String, required: false }
+}, { timestamps: true });
 
 const DateRequest = mongoose.model('DateRequest', DateRequestSchema);
 

@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 
 export const postDateRequest = async (req, res) => {
     try {
-        const { dateSpot, dateInitiator, date } = req.body;
+        const { dateSpot, dateInitiator, date, dateStatus, dateNote } = req.body;
 
         // Validate the input data here if needed
         if (!dateSpot || !dateInitiator || !date) {
@@ -13,11 +13,13 @@ export const postDateRequest = async (req, res) => {
         const dateRequest = new DateRequest({
             dateSpot,
             dateInitiator,
-            date
+            date,
+            dateStatus,
+            dateNote
         });
 
         await dateRequest.save();
-        res.status(201).json({ dateRequest });
+        res.status(201).json({ message: "Date request is created." });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -36,6 +38,7 @@ export const getMydates = async (req, res) => {
 
         res.status(200).json(myDates);
     } catch (error) {
+        console.log(error)
         res.status(500).json({ message: error.message });
     }
 };

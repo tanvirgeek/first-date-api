@@ -34,7 +34,8 @@ export const getMydates = async (req, res) => {
                 { dateInitiator: userId },
                 { date: userId }
             ]
-        }).populate('dateInitiator date');
+        }).populate('dateInitiator date')
+            .sort({ updatedAt: -1 })
 
         res.status(200).json(myDates);
     } catch (error) {

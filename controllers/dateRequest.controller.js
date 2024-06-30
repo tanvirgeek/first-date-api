@@ -42,3 +42,28 @@ export const getMydates = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+export const updateDateStatus = async (req, res) => {
+    const { id, dateStatus } = req.body; // Get the new dateStatus from the request body
+
+    if (!['Pending', 'Accepted', 'Rejected'].includes(dateStatus)) {
+        return res.status(400).json({ error: 'Invalid dateStatus value' });
+    }
+
+    try {
+        const dateRequest = await DateRequest.findByIdAndUpdate(
+            id,
+            { dateStatus },
+            { new: true, runValidators: true }
+        )//.populate('dateInitiator date'); // Populating the dateInitiator and date fields
+
+        if (!dateRequest) {
+            return res.status(404).json({ error: 'DateRequest not found' });
+        }
+
+        res.json({ message: "Date request update success" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};

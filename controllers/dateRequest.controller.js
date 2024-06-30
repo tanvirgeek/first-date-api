@@ -25,24 +25,44 @@ export const postDateRequest = async (req, res) => {
     }
 }
 
+
 export const getMydates = async (req, res) => {
     try {
-
         const userId = new mongoose.Types.ObjectId(req.user.userId);
+        const page = parseInt(req.query.page) || 1; // Get the page number from query parameters, default to 1 if not provided
+        const limit = 10; // Number of items per page
+        const skip = (page - 1) * limit; // Calculate the number of items to skip
+
         const myDates = await DateRequest.find({
             $or: [
                 { dateInitiator: userId },
                 { date: userId }
             ]
-        }).populate('dateInitiator date')
+        })
+            .populate('dateInitiator date')
             .sort({ updatedAt: -1 })
+            .limit(limit)
+            .skip(skip);
 
-        res.status(200).json(myDates);
+        const totalDates = await DateRequest.countDocuments({
+            $or: [
+                { dateInitiator: userId },
+                { date: userId }
+            ]
+        });
+
+        res.status(200).json({
+            myDates,
+            currentPage: page,
+            totalPages: Math.ceil(totalDates / limit),
+            totalDates
+        });
     } catch (error) {
-        console.log(error)
+        console.log(error);
         res.status(500).json({ message: error.message });
     }
 };
+
 
 export const updateDateStatus = async (req, res) => {
     const { id, dateStatus } = req.body; // Get the new dateStatus from the request body

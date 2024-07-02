@@ -88,3 +88,28 @@ export const updateDateStatus = async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 };
+
+
+export const getMyMatches = async (req, res) => {
+    try {
+        const userId = new mongoose.Types.ObjectId(req.user.userId);
+        const { page = 1, limit = 10 } = req.query; // Default to page 1, limit 10
+
+        const myMatches = await DateRequest.find({
+            $or: [
+                { dateInitiator: userId },
+                { date: userId }
+            ],
+            dateStatus: "Accepted"
+        })
+            .populate('dateInitiator date')
+            .sort({ updatedAt: -1 })
+            .skip((page - 1) * limit)
+            .limit(parseInt(limit));
+
+        res.status(200).json(myMatches);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: error.message });
+    }
+};

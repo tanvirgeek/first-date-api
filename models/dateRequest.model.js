@@ -22,7 +22,8 @@ const DateRequestSchema = new Schema({
     dateInitiator: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     date: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     dateStatus: { type: String, required: true, enum: ["Pending", "Accepted", "Rejected"] },
-    dateNote: { type: String, required: false }
+    dateNote: { type: String, required: false },
+    chatId: { type: String, required: false }
 }, { timestamps: true });
 
 const DateRequest = mongoose.model('DateRequest', DateRequestSchema);

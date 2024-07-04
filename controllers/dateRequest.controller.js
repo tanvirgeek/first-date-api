@@ -106,7 +106,6 @@ export const getMyMatches = async (req, res) => {
             .sort({ updatedAt: -1 })
             .skip((page - 1) * limit)
             .limit(parseInt(limit));
-
         res.status(200).json(myMatches);
     } catch (error) {
         console.log(error);

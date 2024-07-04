@@ -1,10 +1,11 @@
 import mongoose from 'mongoose';
 import Chat from '../models/chat.model.js';
 import Message from '../models/message.model.js';
+import DateRequest from '../models/dateRequest.model.js';
 
 // Save a new chat message
 export const saveChat = async (req, res) => {
-    const { chatId, content, toId } = req.body;
+    const { chatId, content, toId, dateRequestId } = req.body;
     const senderId = req.user.userId
 
     if (!chatId || !content || !senderId || !toId) {
@@ -20,8 +21,23 @@ export const saveChat = async (req, res) => {
                 _id: new mongoose.Types.ObjectId(chatId),
                 participants: [new mongoose.Types.ObjectId(senderId), new mongoose.Types.ObjectId(toId)]
             })
-
             await newChat.save()
+            const updatedDateRequest = await DateRequest.findByIdAndUpdate(
+                dateRequestId,
+                { $set: { chatId: newChat.id } },
+                { new: true }  // This option returns the updated document
+            );
+
+            if (updatedDateRequest) {
+                console.log('Update was successful:', updatedDateRequest);
+                // Perform further actions if necessary
+            } else {
+                console.log('Update failed: No document found with the given id');
+                // Handle the case where the document was not found
+            }
+        } else {
+            // Update the updatedAt field to the current time
+            await Chat.findByIdAndUpdate(chatId, { $set: { updatedAt: new Date() } });
         }
 
         const message = new Message({
@@ -33,6 +49,7 @@ export const saveChat = async (req, res) => {
         await message.save();
         res.status(201).json(message);
     } catch (error) {
+        console.log(error)
         res.status(500).json({ error: error.message, exactError: error })
     }
 
@@ -67,13 +84,14 @@ export const getChatPeople = async (req, res) => {
     try {
         const chats = await Chat.find({ participants: userId })
             .populate('participants', 'fullname profilePic')
+            .sort({ updatedAt: -1 })
             .exec();
 
         // Aggregate unique participants
         const uniqueParticipants = [];
         const latestMessagesPromises = [];
 
-        console.log(chats.length, "Chats", userId)
+        //console.log(chats.length, "Chats", userId)
 
         chats.forEach(chat => {
             chat.participants.forEach(participant => {

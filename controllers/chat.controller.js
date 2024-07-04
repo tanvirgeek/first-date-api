@@ -61,21 +61,59 @@ export const getChats = async (req, res) => {
     const { page = 1, limit = 10, chatId } = req.query;
 
     if (!chatId) {
-        res.status(400).json({ error: "chatId is required" });
+        return res.status(400).json({ error: "chatId is required" });
     }
 
     try {
-        const messages = await Message.find({ chat: chatId })
-            .sort({ timestamp: -1 })
-            .skip((page - 1) * limit)
-            .limit(parseInt(limit));
+        const totalMessages = await Message.countDocuments({ chat: chatId });
+        const totalPages = Math.ceil(totalMessages / limit);
+        console.log(totalPages, " totalPages", totalMessages, "totalMessages")
 
-        res.json(messages);
+        // Calculate the correct skip value for paginating from the most recent message
+        const skip = (page - 1) * limit;
+        console.log(skip, " skip")
+
+        const messages = await Message.find({ chat: chatId })
+            .sort({ timestamp: -1 }) // Most recent messages first
+            .skip(skip)
+            .limit(parseInt(limit));
+        console.log(messages.length)
+
+        // Reverse the order of messages to return the oldest first within the page
+        res.json(messages.reverse());
     } catch (error) {
-        res.status(500).json({ error: error.message, exactError: error })
+        res.status(500).json({ error: error.message, exactError: error });
     }
 };
 
+/*
+// Get paginated chat messages for a specific chat
+export const getChats = async (req, res) => {
+    const { page = 1, limit = 10, chatId } = req.query;
+
+    if (!chatId) {
+        return res.status(400).json({ error: "chatId is required" });
+    }
+
+    try {
+        const totalMessages = await Message.countDocuments({ chat: chatId });
+        const totalPages = Math.ceil(totalMessages / limit);
+        console.log(totalPages, " totalPages", totalMessages,"totalMessages")
+
+        // Calculate the correct skip value for paginating from the most recent message
+        const skip = (totalPages - page) * limit;
+        console.log(skip, " skip")
+        const messages = await Message.find({ chat: chatId })
+            .sort({ timestamp: 1 }) // Most recent messages first
+            .skip(skip)
+            .limit(parseInt(limit));
+        console.log(messages.length)
+        res.json(messages);
+    } catch (error) {
+        res.status(500).json({ error: error.message, exactError: error });
+    }
+};
+*/
 // Get paginated list of people the user has chatted with, including the latest message
 export const getChatPeople = async (req, res) => {
     const userId = req.user.userId;

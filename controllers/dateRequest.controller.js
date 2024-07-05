@@ -118,3 +118,21 @@ export const getMyMatches = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+export const updateIsSeen = async (req, res) => {
+    const { id } = req.query; // Assuming the ID of the date request is passed as a URL parameter
+
+    try {
+        const dateRequest = await DateRequest.findByIdAndUpdate(id, { isSeen: true }, { new: true });
+
+        if (!dateRequest) {
+            console.log("SEEN Failure")
+            return res.status(404).json({ error: "Date request not found" });
+        }
+        console.log("SEEN SUCCESS")
+        res.status(200).json(dateRequest);
+    } catch (error) {
+        console.log("SEEN Failure", error)
+        res.status(500).json({ error: error.message });
+    }
+};

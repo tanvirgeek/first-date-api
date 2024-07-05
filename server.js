@@ -1,4 +1,5 @@
 import express from "express";
+import { app, server } from "./Socket/socket.js"
 import dotenv from "dotenv";
 import authRoutes from './routes/auth.routes.js'
 import usersRoutes from './routes/users.routes.js'
@@ -8,7 +9,7 @@ import dateRequestRoutes from './routes/dateRequest.routes.js'
 import connectToMongoDB from "./db/connectToMongodb.js";
 import { verifyToken } from "./utils/verifyToken.js";
 
-const app = express();
+
 dotenv.config()
 
 const PORT = process.env.PORT || 3000
@@ -20,8 +21,11 @@ app.use("/api/random-users", verifyToken, usersRoutes)
 app.use("/api/user", verifyToken, userRoutes)
 app.use("/api/date-requests", verifyToken, dateRequestRoutes)
 app.use("/api/chat", verifyToken, chatRoutes)
+app.use("/", (req, res) => {
+    res.send("Hello Wrld")
+})
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     connectToMongoDB()
     console.log(`server running on port ${PORT}`)
 })

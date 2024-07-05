@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import Chat from '../models/chat.model.js';
 import Message from '../models/message.model.js';
 import DateRequest from '../models/dateRequest.model.js';
+import { getReceiverSocketId, io } from '../Socket/socket.js';
 
 // Save a new chat message
 export const saveChat = async (req, res) => {
@@ -47,6 +48,12 @@ export const saveChat = async (req, res) => {
         });
 
         await message.save();
+
+        // Emit the message to the specific user (toId)
+        const socketId = getReceiverSocketId(toId)
+        console.log(socketId, " SocketID")
+        io.to(socketId).emit('newMessage', message);
+
         res.status(201).json(message);
     } catch (error) {
         console.log(error)
@@ -67,17 +74,14 @@ export const getChats = async (req, res) => {
     try {
         const totalMessages = await Message.countDocuments({ chat: chatId });
         const totalPages = Math.ceil(totalMessages / limit);
-        console.log(totalPages, " totalPages", totalMessages, "totalMessages")
 
         // Calculate the correct skip value for paginating from the most recent message
         const skip = (page - 1) * limit;
-        console.log(skip, " skip")
 
         const messages = await Message.find({ chat: chatId })
             .sort({ timestamp: -1 }) // Most recent messages first
             .skip(skip)
             .limit(parseInt(limit));
-        console.log(messages.length)
 
         // Reverse the order of messages to return the oldest first within the page
         res.json(messages.reverse());

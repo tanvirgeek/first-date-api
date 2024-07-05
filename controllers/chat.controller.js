@@ -51,7 +51,6 @@ export const saveChat = async (req, res) => {
 
         // Emit the message to the specific user (toId)
         const socketId = getReceiverSocketId(toId)
-        console.log(socketId, " SocketID")
         io.to(socketId).emit('newMessage', message);
 
         res.status(201).json(message);

@@ -1,3 +1,4 @@
+import { getReceiverSocketId, io } from "../Socket/socket.js";
 import DateRequest from "../models/dateRequest.model.js";
 import mongoose from "mongoose";
 
@@ -19,6 +20,11 @@ export const postDateRequest = async (req, res) => {
         });
 
         await dateRequest.save();
+
+        const createdDateRequest = await DateRequest.findById(dateRequest.id).populate('dateInitiator date')
+        // Socket Notify
+        const socketId = getReceiverSocketId(date)
+        io.to(socketId).emit('newDateRequest', createdDateRequest);
         res.status(201).json({ message: "Date request is created." });
     } catch (error) {
         res.status(500).json({ error: error.message });

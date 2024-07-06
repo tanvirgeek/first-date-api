@@ -164,3 +164,31 @@ export const getChatPeople = async (req, res) => {
     }
 
 };
+
+
+export const markMessageAsSeen = async (req, res) => {
+    try {
+        const { messageId } = req.body; // Get messageId from request parameters
+
+        if (!messageId) {
+            return res.status(400).json({ error: "messageId is required" });
+        }
+
+        // Find the message by ID and update its isSeen status to true
+        const updatedMessage = await Message.findByIdAndUpdate(
+            messageId,
+            { $set: { isSeen: true } },
+            { new: true } // Return the updated document
+        );
+
+        if (!updatedMessage) {
+            console.log("Update Failed")
+            return res.status(404).json({ error: "Message not found" });
+        }
+        console.log("Update Succes")
+        res.status(200).json({ message: "Message marked as seen" });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: error.message });
+    }
+};

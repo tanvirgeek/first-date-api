@@ -1,5 +1,5 @@
 import express from "express";
-import { getChatPeople, getChats, saveChat } from "../controllers/chat.controller.js";
+import { getChatPeople, getChats, markMessageAsSeen, saveChat } from "../controllers/chat.controller.js";
 
 
 const router = express.Router()
@@ -7,5 +7,6 @@ const router = express.Router()
 router.post("/save", saveChat)
 router.get("/chats", getChats)
 router.get("/people", getChatPeople)
+router.put("/markSeen", markMessageAsSeen)
 
 export default router

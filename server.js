@@ -21,9 +21,6 @@ app.use("/api/random-users", verifyToken, usersRoutes)
 app.use("/api/user", verifyToken, userRoutes)
 app.use("/api/date-requests", verifyToken, dateRequestRoutes)
 app.use("/api/chat", verifyToken, chatRoutes)
-app.use("/", (req, res) => {
-    res.send("Hello Wrld")
-})
 
 server.listen(PORT, () => {
     connectToMongoDB()

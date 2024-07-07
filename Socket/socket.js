@@ -2,6 +2,7 @@
 import { Server } from "socket.io";
 import http from "http"
 import express from 'express';
+import Message from '../models/message.model.js'
 
 const app = express()
 
@@ -36,6 +37,26 @@ io.sockets.on('connection', (socket) => {
         io.emit("getOnlineUsers", Object.keys(userSocketMap))
 
     })
+
+    socket.on('messageSeen', async (data) => {
+        const { messageId, userId } = data;
+
+        try {
+            await Message.findByIdAndUpdate(messageId, { isSeen: true });
+
+            const message = await Message.findById(messageId).populate('chat');
+            const chat = message.chat;
+
+            // Emit update to other participants in the chat
+            chat.participants.forEach(participant => {
+                if (participant.toString() !== userId) {
+                    io.to(getReceiverSocketId(participant.toString())).emit('messageSeenUpdate', messageId);
+                }
+            });
+        } catch (error) {
+            console.error("Error updating message seen status:", error);
+        }
+    });
 })
 
 export { app, io, server };

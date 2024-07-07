@@ -6,11 +6,11 @@ import { getReceiverSocketId, io } from '../Socket/socket.js';
 
 // Save a new chat message
 export const saveChat = async (req, res) => {
-    const { chatId, content, toId, dateRequestId } = req.body;
+    const { id, chatId, content, toId, dateRequestId } = req.body;
     const senderId = req.user.userId
 
-    if (!chatId || !content || !senderId || !toId) {
-        return res.status(400).json({ error: "chatId, content, senderId, toId are required" })
+    if (!id || !chatId || !content || !senderId || !toId) {
+        return res.status(400).json({ error: "id chatId, content, senderId, toId are required" })
     }
 
     try {
@@ -42,6 +42,7 @@ export const saveChat = async (req, res) => {
         }
 
         const message = new Message({
+            _id: new mongoose.Types.ObjectId(id),
             chat: chatId,
             sender: senderId,
             content

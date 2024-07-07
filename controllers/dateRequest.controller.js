@@ -83,11 +83,17 @@ export const updateDateStatus = async (req, res) => {
             id,
             { dateStatus },
             { new: true, runValidators: true }
-        )//.populate('dateInitiator date'); // Populating the dateInitiator and date fields
+        ).populate('dateInitiator date dateSpot'); // Populating the dateInitiator and date fields
 
         if (!dateRequest) {
             return res.status(404).json({ error: 'DateRequest not found' });
         }
+
+        const toId = dateRequest.dateInitiator._id.toString() == req.user.userId ? dateRequest.date._id.toString() : dateRequest.dateInitiator._id.toString()
+
+        // Notify the other user
+        const socketId = getReceiverSocketId(toId)
+        io.to(socketId).emit('dateRequestStatusUpdate', dateRequest);
 
         res.json({ message: "Date request update success" });
     } catch (error) {

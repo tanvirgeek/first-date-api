@@ -57,6 +57,21 @@ io.sockets.on('connection', (socket) => {
             console.error("Error updating message seen status:", error);
         }
     });
+
+    socket.on('typing', (data) => {
+        // Broadcast typing event to other users in the same chat room
+        const { toUserId, chatId } = data
+        const toSocketId = getReceiverSocketId(toUserId)
+        io.to(toSocketId).emit('typing', { chatId });
+    });
+
+    // Handle stop typing event
+    socket.on('stopTyping', (data) => {
+        // Broadcast stop typing event to other users in the same chat room
+        const { toUserId, chatId } = data
+        const toSocketId = getReceiverSocketId(toUserId)
+        io.to(toSocketId).emit('stopTyping', { chatId });
+    });
 })
 
 export { app, io, server };

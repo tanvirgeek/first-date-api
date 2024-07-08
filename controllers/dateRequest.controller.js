@@ -190,3 +190,34 @@ export const updateIsSeen = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+// Controller to fetch DateRequest by dateInitiator and date IDs
+export const getDateRequestByIds = async (req, res) => {
+    const { id1, id2 } = req.query;
+
+    if (!id1 || !id2) {
+        return res.status(400).json({ message: "Both IDs are required" });
+    }
+
+    try {
+        const dateRequest = await DateRequest.findOne({
+            $or: [
+                { dateInitiator: id1 },
+                { date: id1 },
+                { dateInitiator: id2 },
+                { date: id2 }
+            ]
+        })
+            .populate('dateInitiator date'); // Populate dateInitiator and date fields
+
+        if (!dateRequest) {
+            return res.status(404).json({ message: "DateRequest not found" });
+        }
+
+        res.status(200).json(dateRequest);
+    } catch (error) {
+        console.error("Error fetching DateRequest:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+

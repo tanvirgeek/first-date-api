@@ -1,5 +1,5 @@
 import express from "express";
-import { getMyMatches, getMydates, postDateRequest, updateDateStatus, updateIsSeen } from "../controllers/dateRequest.controller.js";
+import { getDateRequestByIds, getMyMatches, getMydates, postDateRequest, updateDateStatus, updateIsSeen } from "../controllers/dateRequest.controller.js";
 
 
 const router = express.Router()
@@ -9,5 +9,6 @@ router.get("/", getMydates)
 router.put("/", updateDateStatus)
 router.get("/matches", getMyMatches)
 router.put("/seenTrue", updateIsSeen)
+router.get("/getDateRequestByIds", getDateRequestByIds)
 
 export default router

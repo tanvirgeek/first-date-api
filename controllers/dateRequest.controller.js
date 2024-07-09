@@ -2,6 +2,7 @@ import { getReceiverSocketId, io } from "../Socket/socket.js";
 import DateRequest from "../models/dateRequest.model.js";
 import mongoose from "mongoose";
 import Message from "../models/message.model.js";
+import { updateUnseenDateRequestsCount } from "./badge.controller.js";
 
 export const postDateRequest = async (req, res) => {
     try {
@@ -26,6 +27,7 @@ export const postDateRequest = async (req, res) => {
         // Socket Notify
         const socketId = getReceiverSocketId(date)
         io.to(socketId).emit('newDateRequest', createdDateRequest);
+        updateUnseenDateRequestsCount(date)
         res.status(201).json({ message: "Date request is created." });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -94,6 +96,10 @@ export const updateDateStatus = async (req, res) => {
         // Notify the other user
         const socketId = getReceiverSocketId(toId)
         io.to(socketId).emit('dateRequestStatusUpdate', dateRequest);
+
+        if (dateRequest.dateStatus == "Accepted") {
+            updateUnseenDateRequestsCount(toId)
+        }
 
         res.json({ message: "Date request update success" });
     } catch (error) {

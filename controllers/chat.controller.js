@@ -3,6 +3,7 @@ import Chat from '../models/chat.model.js';
 import Message from '../models/message.model.js';
 import DateRequest from '../models/dateRequest.model.js';
 import { getReceiverSocketId, io } from '../Socket/socket.js';
+import { updateUnreadMessagesCount } from './badge.controller.js';
 
 // Save a new chat message
 export const saveChat = async (req, res) => {
@@ -53,6 +54,7 @@ export const saveChat = async (req, res) => {
         // Emit the message to the specific user (toId)
         const socketId = getReceiverSocketId(toId)
         io.to(socketId).emit('newMessage', message);
+        updateUnreadMessagesCount(toId)
 
         res.status(201).json(message);
     } catch (error) {

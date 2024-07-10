@@ -4,14 +4,16 @@ import User from "../models/user.model.js";
 export const getSearchResult = async (req, res) => {
     try {
         const userId = req.user.userId; // Assuming req.user contains the authenticated user's information
-        const { fieldName, value, page = 1 } = req.query;
+        const { fieldName, value, page = 1, gender, interestedIn } = req.query;
 
         if (!fieldName || !value) {
             return res.status(400).json({ error: "fieldName and value are required query parameters" });
         }
 
         const searchQuery = {
-            _id: { $ne: new mongoose.Types.ObjectId(userId) }, // Exclude the requesting user's ID
+            _id: { $ne: new mongoose.Types.ObjectId(userId) },
+            gender: { $eq: gender }, // Match gender
+            interestedIn: { $eq: interestedIn }, // Match interestedIn// Exclude the requesting user's ID
             [fieldName]: { $regex: value, $options: 'i' } // Case-insensitive search
         };
 

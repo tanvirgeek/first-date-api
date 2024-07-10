@@ -5,6 +5,7 @@ import authRoutes from './routes/auth.routes.js'
 import usersRoutes from './routes/users.routes.js'
 import userRoutes from './routes/user.routes.js'
 import chatRoutes from './routes/chat.routes.js'
+import searchRoutes from './routes/search.routes.js'
 import dateRequestRoutes from './routes/dateRequest.routes.js'
 import badgeRoutes from './routes/badge.routes.js'
 import connectToMongoDB from "./db/connectToMongodb.js";
@@ -23,6 +24,7 @@ app.use("/api/user", verifyToken, userRoutes)
 app.use("/api/date-requests", verifyToken, dateRequestRoutes)
 app.use("/api/chat", verifyToken, chatRoutes)
 app.use("/api/badge", verifyToken, badgeRoutes)
+app.use("/api/search", verifyToken, searchRoutes)
 
 server.listen(PORT, () => {
     connectToMongoDB()

@@ -40,7 +40,7 @@ const userSchema = new mongoose.Schema({
         required: true
     },
     yearlyIncome: {
-        type: String,
+        type: Number,
         required: true
     },
     profilePic: {

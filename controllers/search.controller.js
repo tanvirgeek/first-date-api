@@ -48,6 +48,12 @@ const buildQuery = (body) => {
     if (body.attachmentStyle) {
         query.attachmentStyle = body.attachmentStyle;
     }
+    if (body.gender) {
+        query.gender = body.gender;
+    }
+    if (body.interestedIn) {
+        query.interestedIn = body.interestedIn;
+    }
     if (body.country) {
         query.country = { $regex: body.country, $options: 'i' };
     }

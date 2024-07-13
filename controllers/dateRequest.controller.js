@@ -76,7 +76,7 @@ export const getMydates = async (req, res) => {
 export const updateDateStatus = async (req, res) => {
     const { id, dateStatus } = req.body; // Get the new dateStatus from the request body
 
-    if (!['Pending', 'Accepted', 'Rejected'].includes(dateStatus)) {
+    if (!['Pending', 'Accepted', 'Rejected', 'Canceled'].includes(dateStatus)) {
         return res.status(400).json({ error: 'Invalid dateStatus value' });
     }
 

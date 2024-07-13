@@ -21,7 +21,7 @@ const DateRequestSchema = new Schema({
     dateSpot: { type: DateSpotSchema, required: true },
     dateInitiator: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     date: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    dateStatus: { type: String, required: true, enum: ["Pending", "Accepted", "Rejected"] },
+    dateStatus: { type: String, required: true, enum: ["Pending", "Accepted", "Rejected", "Canceled"] },
     dateNote: { type: String, required: false },
     chatId: { type: String, required: false },
     isSeen: { type: Boolean, default: false }

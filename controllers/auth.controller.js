@@ -25,7 +25,7 @@ export const signup = async (req, res) => {
 
         const user = await User.findOne({ email })
         if (user) {
-            res.status(400).json({ error: "Email already exists!" })
+            res.status(200).json({ error: "Email already exists!" })
         } else {
             // If the images are successfully uploaded, you can save their paths to the database or perform any other action here
             // @ts-ignore
@@ -88,11 +88,11 @@ export const signin = async (req, res) => {
     try {
         const user = await User.findOne({ email: req.body.email });
         if (!user) {
-            return res.status(400).send('User not found');
+            return res.status(200).send({ error: 'User not found' });
         }
         const validPassword = await bcrypt.compare(req.body.password, user.password);
         if (!validPassword) {
-            return res.status(400).send('Invalid password');
+            return res.status(200).send({ error: 'Invalid password' });
         }
         if (process.env.ACCESS_TOKEN_SECRET && process.env.REFRESH_TOKEN_SECRET) {
             const accessToken = jwt.sign({ userId: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });

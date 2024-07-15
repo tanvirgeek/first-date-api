@@ -35,6 +35,7 @@ export const getPaginatedUsersFromCity = async (req, res) => {
             city,
             gender,
             interestedIn,
+            isDeleted: false,
             _id: { $nin: sessionUsers.excludedUserIds }
         };
 
@@ -49,6 +50,7 @@ export const getPaginatedUsersFromCity = async (req, res) => {
                 country,
                 gender,
                 interestedIn,
+                isDeleted: false,
                 _id: { $nin: sessionUsers.excludedUserIds }
             };
 
@@ -61,6 +63,7 @@ export const getPaginatedUsersFromCity = async (req, res) => {
                 const matchQueryWorld = {
                     gender,
                     interestedIn,
+                    isDeleted: false,
                     _id: { $nin: sessionUsers.excludedUserIds }
                 };
 

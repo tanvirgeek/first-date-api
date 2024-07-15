@@ -94,6 +94,12 @@ export const signin = async (req, res) => {
         if (!validPassword) {
             return res.status(200).send({ error: 'Invalid password' });
         }
+        console.log(user.isDeleted, "isDeleted")
+        if (user.isDeleted == true) {
+            user.isDeleted = false
+            await user.save()
+        }
+
         if (process.env.ACCESS_TOKEN_SECRET && process.env.REFRESH_TOKEN_SECRET) {
             const accessToken = jwt.sign({ userId: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
             const refreshToken = jwt.sign({ userId: user._id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '365d' });

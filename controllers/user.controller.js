@@ -158,7 +158,7 @@ export const uploadGalleryImages = async (req, res) => {
 
 // Controller function to fetch gallery images
 export const fetchGalleryImages = async (req, res) => {
-    
+
     const { userId } = req.query
 
     try {
@@ -320,5 +320,19 @@ export const getUserById = async (req, res) => {
     } catch (error) {
         console.error("Error fetching user:", error);
         res.status(500).json({ message: "Server error" });
+    }
+};
+
+export const markUserAsDeleted = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        console.log(userId)
+        const user = await User.findByIdAndUpdate(userId, { isDeleted: true }, { new: true });
+        if (!user) {
+            return res.status(200).json({ error: 'User not found' });
+        }
+        res.status(200).json({ message: 'User marked as deleted' });
+    } catch (error) {
+        res.status(500).json({ error: 'Internal server error' });
     }
 };

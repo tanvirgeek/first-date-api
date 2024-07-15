@@ -13,6 +13,7 @@ export const getSearchResult = async (req, res) => {
         const searchQuery = {
             _id: { $ne: new mongoose.Types.ObjectId(userId) },
             gender: { $eq: gender }, // Match gender
+            isDeleted: false,
             interestedIn: { $eq: interestedIn }, // Match interestedIn// Exclude the requesting user's ID
             [fieldName]: { $regex: value, $options: 'i' } // Case-insensitive search
         };
@@ -78,6 +79,8 @@ const buildQuery = (body) => {
     if (body.yearlyIncomeMin) {
         query.yearlyIncome = { $gte: body.yearlyIncomeMin };
     }
+    
+    query.isDeleted = false
 
     return query;
 };

@@ -303,8 +303,7 @@ export const uploadUpdateImageGallery = multer({
 });
 
 export const getUserById = async (req, res) => {
-    const userId = req.query.id;
-
+    const userId = req.query.userId;
     if (!userId) {
         return res.status(400).json({ message: "User ID is required" });
     }
@@ -318,7 +317,6 @@ export const getUserById = async (req, res) => {
 
         res.status(200).json(user);
     } catch (error) {
-        console.error("Error fetching user:", error);
         res.status(500).json({ message: "Server error" });
     }
 };

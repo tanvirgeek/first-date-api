@@ -9,8 +9,12 @@ export const updateUnreadMessagesCount = async (userId) => {
     );
 };
 
+export const decreaseOneMessageBadgeCount = async (userId) => {
+    
+};
+
 // Function to update unseen date requests count
-export const updateUnseenDateRequestsCount = async (userId) => {
+export const decreaseMessageBadgeOne = async (userId) => {
     await BadgeCount.findOneAndUpdate(
         { user: userId },
         { $inc: { unseenDateRequestsCount: 1 } },
@@ -59,6 +63,23 @@ export const getBadgeCount = async (req, res) => {
                 unseenDateRequestsCount: 0
             });
         }
+
+        res.status(200).json(badgeCounts);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+export const updateUnseenDateRequestsCount = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const badgeCounts = await BadgeCount.findOne({ user: userId });
+
+        await BadgeCount.findOneAndUpdate(
+            { user: userId },
+            { $inc: { unreadMessagesCount: -1 } },
+            { upsert: true }
+        );
 
         res.status(200).json(badgeCounts);
     } catch (error) {

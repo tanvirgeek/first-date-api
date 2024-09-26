@@ -4,6 +4,65 @@ import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import fs from "fs"
 import path from "path";
+import { Resend } from 'resend';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Send password reset email
+export const forgotPassword = async (req, res) => {
+    const { email } = req.body;
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // @ts-ignore
+        const token = jwt.sign({ userId: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+        const resetUrl = `${process.env.FRONTEND_URL}/${token}`;
+
+        // Send email with Resend
+        await resend.emails.send({
+            // @ts-ignore
+            from: process.env.GMAIL_USER,
+            to: email,
+            subject: 'Password Reset',
+            html: `<p>Click <a href="lovemeapp://resetpassword/${token}">here</a> to reset your password.<br/> If the link does not work, copy and paste the following URL into your iPhone browser:<br/><br/> lovemeapp://resetpassword/${token}</p>`,
+        });
+        console.log("Password reset email sent")
+        res.status(200).json({ message: 'Password reset email sent' });
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: 'Error sending email', error });
+    }
+};
+
+// Reset password using token
+export const resetPassword = async (req, res) => {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    try {
+        // @ts-ignore
+        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+        const user = await User.findById(decoded.userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        user.password = hashedPassword;
+        await user.save();
+
+        res.status(200).json({ message: 'Password reset successful' });
+    } catch (error) {
+        res.status(400).json({ message: 'Invalid or expired token', error });
+    }
+};
 
 export const signup = async (req, res) => {
     try {

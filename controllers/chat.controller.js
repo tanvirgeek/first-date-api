@@ -54,6 +54,7 @@ export const saveChat = async (req, res) => {
         // Emit the message to the specific user (toId)
         const socketId = getReceiverSocketId(toId)
         io.to(socketId).emit('newMessage', message);
+        console.log(socketId, message, toId)
         updateUnreadMessagesCount(toId)
 
         res.status(201).json(message);

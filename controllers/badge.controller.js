@@ -70,19 +70,18 @@ export const getBadgeCount = async (req, res) => {
     }
 };
 
-export const updateUnseenDateRequestsCount = async (req, res) => {
+export const updateUnseenDateRequestsCount = async (userId) => {
     try {
-        const userId = req.user.userId;
         const badgeCounts = await BadgeCount.findOne({ user: userId });
 
         await BadgeCount.findOneAndUpdate(
             { user: userId },
-            { $inc: { unreadMessagesCount: -1 } },
+            { $inc: { unseenDateRequestsCount: 1 } },
             { upsert: true }
         );
 
-        res.status(200).json(badgeCounts);
+        //res.status(200).json(badgeCounts);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        //res.status(500).json({ message: error.message });
     }
 };

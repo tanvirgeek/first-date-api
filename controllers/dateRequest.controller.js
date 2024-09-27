@@ -212,10 +212,8 @@ export const getDateRequestByIds = async (req, res) => {
     try {
         const dateRequest = await DateRequest.findOne({
             $or: [
-                { dateInitiator: id1 },
-                { date: id1 },
-                { dateInitiator: id2 },
-                { date: id2 }
+                { dateInitiator: id1, date: id2 },
+                { dateInitiator: id2, date: id1 }
             ]
         })
             .populate('dateInitiator date'); // Populate dateInitiator and date fields

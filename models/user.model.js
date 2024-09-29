@@ -58,7 +58,8 @@ const userSchema = new mongoose.Schema({
     isDeleted: {
         type: Boolean,
         default: false
-    }
+    },
+    deviceTokens: { type: [String], default: [] },
 }, { timestamps: true })
 
 const User = mongoose.model("User", userSchema)

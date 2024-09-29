@@ -334,3 +334,30 @@ export const markUserAsDeleted = async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 };
+
+// Save/Update User Device Token
+export const saveDeviceToken = async (req, res) => {
+    try {
+        const { userId, deviceToken } = req.body;
+        console.log(userId, deviceToken)
+        let user = await User.findById(userId);
+
+        if (!user) {
+            console.log("User Not Found")
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (!user.deviceTokens.includes(deviceToken)) {
+            user.deviceTokens.push(deviceToken); // Add token if not exists
+            console.log("1")
+        }
+
+        await user.save();
+        console.log("2")
+        res.status(200).json({ message: 'Device token saved' });
+    } catch (error) {
+        console.log("3")
+        res.status(500).json({ message: error.message });
+    }
+};
+

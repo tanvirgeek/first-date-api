@@ -1,5 +1,5 @@
 import express from "express";
-import { fetchGalleryImages, uploadGallery, updatePassword, updateUserIformation, updateUserProfilePic, uploadGalleryImages, deleteSingleImageFromGallery, uploadUpdateImageGallery, updateImageGallery, getUserById, markUserAsDeleted } from "../controllers/user.controller.js";
+import { fetchGalleryImages, uploadGallery, updatePassword, updateUserIformation, updateUserProfilePic, uploadGalleryImages, deleteSingleImageFromGallery, uploadUpdateImageGallery, updateImageGallery, getUserById, markUserAsDeleted, saveDeviceToken } from "../controllers/user.controller.js";
 import { fileFilter, storage } from "../controllers/auth.controller.js";
 
 import multer from "multer";
@@ -16,5 +16,6 @@ router.put("/updateImageGallery", uploadUpdateImageGallery.array('images', 8), u
 router.get("/fetchGallery", fetchGalleryImages)
 router.get("/getUserById", getUserById)
 router.put("/delete", markUserAsDeleted)
+router.post('/save-token', saveDeviceToken);
 
 export default router
